@@ -1,12 +1,12 @@
 export type Meal = {
-  id: number
-  name: string
-  calories: number
-  price: number
-}
+  id: number;
+  name: string;
+  calories: number;
+  price: number;
+};
 
 export type Order = {
-  id: number
-  meals: Meal[]
-  total: number
-}
+  id: number;
+  meals: Meal[];
+  total: number;
+};

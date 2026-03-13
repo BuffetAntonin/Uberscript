@@ -1,0 +1,16 @@
+import { Meal } from './meals.js';
+
+export async function fetchMeals(): Promise<Meal[]> {
+  try {
+    const response = await fetch('https://keligmartin.github.io/api/meals.json');
+    
+    if (!response.ok) {
+      throw new Error();
+    }
+    
+    return await response.json();
+  } catch (error) {
+    console.error("Erreur lors du chargement des repas");
+    return []; 
+  }
+}
