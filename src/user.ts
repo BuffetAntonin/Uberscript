@@ -5,10 +5,10 @@ import { TropPauvreErreur } from './error.js';
 export class User {
   id: number;
   name: string;
-  wallet: number | object;
+  wallet: number;
   orders: Order[];
 
-  constructor(id: number, name: string, wallet: number | object) {
+  constructor(id: number, name: string, wallet: number) {
     this.id = id;
     this.name = name;
     this.wallet = wallet;
@@ -17,44 +17,44 @@ export class User {
   }
 
   save() {
-    localStorage.setItem("commandes", JSON.stringify(this.orders));
+  localStorage.setItem("commandes", JSON.stringify(this.orders));
+  localStorage.setItem("argent", this.wallet.toString()); 
   }
 
   load() {
-    const data = localStorage.getItem("commandes");
-    if (data) {
-      this.orders = JSON.parse(data);
+    const dataCommandes = localStorage.getItem("commandes");
+    if (dataCommandes) this.orders = JSON.parse(dataCommandes);
+
+    const dataArgent = localStorage.getItem("argent");
+    if (dataArgent) {
+      this.wallet = parseFloat(dataArgent);
     }
   }
 
   
   addFunds(amount: number) {
     if (amount > 0) {
-      if (typeof this.wallet === "number") {
-        this.wallet += amount;
-      }
+      this.wallet += amount;
+      this.wallet = Math.round(this.wallet * 100) / 100;
       this.save();
     }
   }
 
-
   orderMenu(meals: Meal[]) {
     const total = meals.reduce((acc, m) => acc + m.price, 0);
-    let argent = typeof this.wallet === "number" ? this.wallet : 0;
 
-    if (argent < total) {
-      const msg = `Fonds insuffisants\nRestant : ${argent}€\nTotal Menu : ${total}€`;
+    if (this.wallet < total) {
+      const msg = `Fonds insuffisants\nRestant : ${this.wallet}€\nTotal Menu : ${total}€`;
       alert(msg);
       throw new TropPauvreErreur(msg);
     }
 
-    if (typeof this.wallet === "number") {
-      this.wallet -= total;
-    }
+    this.wallet -= total;
+    this.wallet = Math.round(this.wallet * 100) / 100;
 
     this.orders.push({
       id: Date.now(),
-      meals: meals,
+      meals: [...meals], // On utilise [...meals] pour copier la liste
       total: total
     });
 

@@ -26,7 +26,7 @@ function rafraichir() {
       
       const btnRetirer = document.createElement('button');
       btnRetirer.className = "btn btn-sm btn-danger";
-      btnRetirer.textContent = "X";
+      btnRetirer.textContent = "Supprime";
       btnRetirer.onclick = () => {
         selectionActuelle.splice(index, 1);
         rafraichir();
@@ -53,7 +53,7 @@ function rafraichir() {
 }
 
 const btnPlusArgent = document.createElement('button');
-btnPlusArgent.textContent = "＋ Ajouter de l'argent";
+btnPlusArgent.textContent = "Ajouter de l'argent";
 btnPlusArgent.className = "btn btn-warning btn-sm ms-3 fw-bold";
 
 if (bandeauArgent) {
@@ -61,11 +61,18 @@ if (bandeauArgent) {
   
   btnPlusArgent.onclick = () => {
     const reponse = prompt("Montant à ajouter au portefeuille :");
+    
     if (reponse) {
-      const montant = parseFloat(reponse);
+      const montantNettoye = reponse.replace(',', '.');
+      let montant = parseFloat(montantNettoye);
+
       if (!isNaN(montant) && montant > 0) {
+        montant = Math.round(montant * 100) / 100;
+        
         utilisateur.addFunds(montant);
         rafraichir();
+      } else {
+        alert("Veuillez saisir un montant valide (ex: 10 ou 10.50)");
       }
     }
   };
@@ -99,7 +106,7 @@ async function init() {
 
         const btn = document.createElement('button');
         btn.className = "btn btn-sm btn-success";
-        btn.textContent = "+ Ajouter";
+        btn.textContent = "Ajouter";
         btn.onclick = () => {
           selectionActuelle.push(plat);
           rafraichir();
