@@ -1,4 +1,3 @@
-// src/user.ts
 import { Meal, Order } from './meals.js';
 
 export class User {
