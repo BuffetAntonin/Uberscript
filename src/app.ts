@@ -85,27 +85,30 @@ if (btnValider) {
   };
 }
 
+
+
 async function init() {
+  
   try {
     const repas = await fetchMeals();
-  if (listeRepas) {
-    repas.forEach((plat) => {
-      const li = document.createElement('li');
-      li.className = "list-group-item d-flex justify-content-between align-items-center";
-      li.textContent = `${plat.name} - ${plat.price}€`;
+    if (listeRepas) {
+      repas.forEach((plat) => {
+        const li = document.createElement('li');
+        li.className = "list-group-item d-flex justify-content-between align-items-center";
+        li.textContent = `${plat.name} - ${plat.price}€`;
 
-      const btn = document.createElement('button');
-      btn.className = "btn btn-sm btn-success";
-      btn.textContent = "+ Ajouter";
-      btn.onclick = () => {
-        selectionActuelle.push(plat);
-        rafraichir();
-      };
+        const btn = document.createElement('button');
+        btn.className = "btn btn-sm btn-success";
+        btn.textContent = "+ Ajouter";
+        btn.onclick = () => {
+          selectionActuelle.push(plat);
+          rafraichir();
+        };
 
-      li.appendChild(btn);
-      listeRepas.appendChild(li);
-    });
-  }
+        li.appendChild(btn);
+        listeRepas.appendChild(li);
+      });
+    }
   }catch (e: any) {
     alert(e.message);
     if (listeRepas) {
