@@ -1,21 +1,19 @@
-import { Meal } from './meals.js';
-import { ApiError } from './error.js';
+export type Meal = {
+  id: number;
+  name: string;
+  calories: number;
+  price: number;
+};
 
 export async function fetchMeals(): Promise<Meal[]> {
   try {
-    const response = await fetch('https://keligmartin.github.io/api/meals.json');
-    
+    const response = await fetch("https://keligmartin.github.io/api/meals.json");
     if (!response.ok) {
-      throw new ApiError("Erreur lors du chargement des repas");
+      throw new Error();
     }
-    
     return await response.json();
   } catch (error) {
-    if (error instanceof ApiError) {
-      console.error(error.message);
-    } else {
-      console.error("Erreur lors du chargement des repas");
-    }
-    return []; 
+    console.error("Erreur lors du chargement des repas");
+    return [];
   }
 }

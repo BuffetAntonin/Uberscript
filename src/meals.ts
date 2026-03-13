@@ -4,9 +4,3 @@ export type Meal = {
   calories: number;
   price: number;
 };
-
-export type Order = {
-  id: number;
-  meals: Meal[];
-  total: number;
-};
