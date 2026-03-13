@@ -1,61 +1,116 @@
-import { fetchMeals, Meal } from './api.js';
+import { fetchMeals } from './api.js';
 import { User } from './user.js';
+import { Meal } from './meals.js';
 
-const moi = new User(1, "Antonin", 50);
+const utilisateur = new User(1, "Antonin", 100);
+let selectionActuelle: Meal[] = [];
 
 const listeRepas = document.getElementById('mealList');
 const listeMenu = document.getElementById('menuList');
-const totalHTElt = document.getElementById('menuTotalHT');
+const listeCommandes = document.getElementById('orderHistory');
 const totalTTCElt = document.getElementById('menuTotalTTC');
-const btnCalculer = document.getElementById('calculateMenuBtn');
+const btnValider = document.getElementById('calculateMenuBtn');
+const bandeauArgent = document.getElementById('wallet');
 
 function rafraichir() {
-  if (listeMenu) {
-    const commandesValides = moi.orders.filter(o => o.total > 0);
-
-    const htmlMedias = commandesValides.map(o => {
-      return `<li class="list-group-item">${o.meals[0].name}</li>`;
-    });
-
-    listeMenu.innerHTML = htmlMedias.join("");
+  if (bandeauArgent) {
+    bandeauArgent.textContent = `Argent : ${utilisateur.wallet}€`;
   }
 
-  const totalTTC = moi.orders.reduce((acc, o) => acc + o.total, 0);
-  const totalHT = totalTTC / 1.2;
+  if (listeMenu) {
+    listeMenu.innerHTML = "";
+    selectionActuelle.forEach((plat, index) => {
+      const li = document.createElement('li');
+      li.className = "list-group-item d-flex justify-content-between";
+      li.textContent = plat.name;
+      
+      const btnRetirer = document.createElement('button');
+      btnRetirer.className = "btn btn-sm btn-danger";
+      btnRetirer.textContent = "X";
+      btnRetirer.onclick = () => {
+        selectionActuelle.splice(index, 1);
+        rafraichir();
+      };
+      
+      li.appendChild(btnRetirer);
+      listeMenu.appendChild(li);
+    });
+  }
 
-  if (totalTTCElt) totalTTCElt.textContent = totalTTC.toString();
-  if (totalHTElt) totalHTElt.textContent = totalHT.toFixed(2);
+  if (listeCommandes) {
+    listeCommandes.innerHTML = "";
+    utilisateur.orders.forEach(commande => {
+      const li = document.createElement('li');
+      li.className = "list-group-item";
+      const noms = commande.meals.map(m => m.name).join(", ");
+      li.textContent = `Commande #${commande.id} : [${noms}] - ${commande.total}€`;
+      listeCommandes.appendChild(li);
+    });
+  }
+
+  const totalProvisoire = selectionActuelle.reduce((acc, m) => acc + m.price, 0);
+  if (totalTTCElt) totalTTCElt.textContent = totalProvisoire.toString();
 }
 
-if (btnCalculer) {
-  btnCalculer.onclick = () => rafraichir();
+const btnPlusArgent = document.createElement('button');
+btnPlusArgent.textContent = "＋ Ajouter de l'argent";
+btnPlusArgent.className = "btn btn-warning btn-sm ms-3 fw-bold";
+
+if (bandeauArgent) {
+  bandeauArgent.parentElement?.appendChild(btnPlusArgent);
+  
+  btnPlusArgent.onclick = () => {
+    const reponse = prompt("Montant à ajouter au portefeuille :");
+    if (reponse) {
+      const montant = parseFloat(reponse);
+      if (!isNaN(montant) && montant > 0) {
+        utilisateur.addFunds(montant);
+        rafraichir();
+      }
+    }
+  };
+}
+
+if (btnValider) {
+  btnValider.textContent = "Valider et Payer le Menu";
+  btnValider.onclick = () => {
+    if (selectionActuelle.length === 0) return;
+    try {
+      utilisateur.orderMenu(selectionActuelle);
+      selectionActuelle = [];
+      rafraichir();
+    } catch (e) {
+      console.log("Paiement refusé");
+    }
+  };
 }
 
 async function init() {
-  const repas = await fetchMeals();
-
+  try {
+    const repas = await fetchMeals();
   if (listeRepas) {
-    repas.forEach((plat: Meal) => {
+    repas.forEach((plat) => {
       const li = document.createElement('li');
       li.className = "list-group-item d-flex justify-content-between align-items-center";
       li.textContent = `${plat.name} - ${plat.price}€`;
 
       const btn = document.createElement('button');
-      btn.className = "btn btn-sm btn-primary";
-      btn.textContent = "Commander";
-
+      btn.className = "btn btn-sm btn-success";
+      btn.textContent = "+ Ajouter";
       btn.onclick = () => {
-        try {
-          moi.orderMeal(plat);
-          rafraichir();
-        } catch (e) {
-          console.log("Erreur de solde");
-        }
+        selectionActuelle.push(plat);
+        rafraichir();
       };
 
       li.appendChild(btn);
       listeRepas.appendChild(li);
     });
+  }
+  }catch (e: any) {
+    alert(e.message);
+    if (listeRepas) {
+      listeRepas.innerHTML = `<li class="list-group-item text-danger">Impossible de charger la carte.</li>`;
+    }
   }
   
   rafraichir();

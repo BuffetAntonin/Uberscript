@@ -1,19 +1,18 @@
-export type Meal = {
-  id: number;
-  name: string;
-  calories: number;
-  price: number;
-};
+import { Meal } from "./meals.js";
+import { ApiError } from "./error.js";
 
 export async function fetchMeals(): Promise<Meal[]> {
   try {
     const response = await fetch("https://keligmartin.github.io/api/meals.json");
+
     if (!response.ok) {
-      throw new Error();
+      throw new ApiError(response.status); 
     }
+
     return await response.json();
   } catch (error) {
-    console.error("Erreur lors du chargement des repas");
-    return [];
+    if (error instanceof ApiError) throw error;
+    
+    throw new ApiError(0);
   }
 }

@@ -27,25 +27,42 @@ export class User {
     }
   }
 
-  orderMeal(meal: Meal) {
+  
+  addFunds(amount: number) {
+    if (amount > 0) {
+      if (typeof this.wallet === "number") {
+        this.wallet += amount;
+      }
+      this.save();
+    }
+  }
+
+
+  orderMenu(meals: Meal[]) {
+    const total = meals.reduce((acc, m) => acc + m.price, 0);
     let argent = typeof this.wallet === "number" ? this.wallet : 0;
 
-    if (argent < meal.price) {
-      const msg = `Fonds insuffisants\nPrix restant : ${argent}€\nPrix total : ${meal.price}€`;
+    if (argent < total) {
+      const msg = `Fonds insuffisants\nRestant : ${argent}€\nTotal Menu : ${total}€`;
       alert(msg);
       throw new TropPauvreErreur(msg);
     }
 
     if (typeof this.wallet === "number") {
-      this.wallet -= meal.price;
+      this.wallet -= total;
     }
 
     this.orders.push({
       id: Date.now(),
-      meals: [meal],
-      total: meal.price
+      meals: meals,
+      total: total
     });
 
+    this.save();
+  }
+
+  deleteOrder(id: number) {
+    this.orders = this.orders.filter(o => o.id !== id);
     this.save();
   }
 }
